@@ -1,8 +1,4 @@
-# Traffic Data Similarity Analysis: PeMS vs StreetLight
-
-This project evaluates how closely third-party traffic data from StreetLight aligns with sensor-based ground truth data from PeMS across different regions of California.
-
-**The goal is to understand:**
+# The goal is to understand
 - Whether StreetLight captures real traffic behavior accurately
 - Where it deviates (magnitude, variability, congestion patterns)
 - How reliable it is for downstream transportation analysis
