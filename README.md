@@ -64,7 +64,7 @@ A Dash-based dashboard enables:
 
 Here's the link to the dashboard presentation : 
 
-https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4
+[https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4](https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4)
 
 ## How to Run the Project
 
