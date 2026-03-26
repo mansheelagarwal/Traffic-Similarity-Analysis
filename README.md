@@ -60,6 +60,11 @@ A Dash-based dashboard enables:
   - PCA comparison
 
 ---
+## Dashboard Explanation Loom Video 
+
+Here's the link to the dashboard presentation : 
+
+https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4
 
 ## How to Run the Project
 
