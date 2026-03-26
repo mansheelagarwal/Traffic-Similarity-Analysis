@@ -1,4 +1,4 @@
-## The goal is to understand
+## The Goal is to Understand
 - Whether StreetLight captures real traffic behavior accurately
 - Where it deviates (magnitude, variability, congestion patterns)
 - How reliable it is for downstream transportation analysis
