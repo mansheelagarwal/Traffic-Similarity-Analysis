@@ -71,7 +71,7 @@ A Dash-based dashboard enables:
 
 Run the similarity exploration notebook:
 ```text
-notebooks/similarity_analysis_exploration.ipynb
+similarity_analysis_exploration.ipynb
 ```
 
 #### Expected Output Files
