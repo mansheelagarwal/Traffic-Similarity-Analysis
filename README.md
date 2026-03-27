@@ -1,6 +1,6 @@
 # Traffic Similarity Analysis — Technical Upgrades
 
-This branch refactors the original notebook-based analysis into a structured Python package with tested modules and statistically rigorous metrics. The analysis itself is unchanged — this is about making it reproducible, testable, and extensible.
+This branch refactors the original notebook-based analysis into a structured Python package with tested modules and statistically rigorous metrics. The analysis itself is unchanged and this is about making it reproducible, testable, and extensible.
 
 See the `main` branch for background on the dataset, regions, and analytical goals.
 
@@ -14,9 +14,9 @@ Three things were added on top of the existing analysis:
 
 **Bootstrap confidence intervals** — the original Energy Distance, Wasserstein, and MMD scores were point estimates with no uncertainty quantification. All three now report 95% CIs via percentile bootstrap (500 resamples).
 
-**Bias decomposition** — MAE tells you *how much* StreetLight is off. The Murphy (1988) decomposition tells you *why*: it splits MSE into bias², variance, and noise components. High-congestion PM peak, for example, has ~60% of its error coming from systematic bias rather than random noise — meaning calibration would actually help there.
+**Bias decomposition** — MAE tells you *how much* StreetLight is off. The Murphy (1988) decomposition tells you *why*: it splits MSE into bias², variance, and noise components. High congestion PM peak, for example, has ~60% of its error coming from systematic bias rather than random noise, meaning calibration would actually help there.
 
-**Quantile calibration** — a post-hoc correction layer that maps StreetLight flow distributions toward PeMS using quantile transformers fit per region/time slice. Requires n ≥ 30 observations per group; skips groups below that threshold rather than overfitting.
+**Quantile calibration** — a post hoc correction layer that maps StreetLight flow distributions toward PeMS using quantile transformers fit per region/time slice. Requires n ≥ 30 observations per group; skips groups below that threshold rather than overfitting.
 
 ---
 
@@ -90,4 +90,4 @@ print(cal.calibration_report(hourly_df))
 
 ## A note on dashboard_data
 
-The CSVs in `dashboard_data/` are aggregated summaries — `hourly_df.csv` stores hourly *averages* per group (4–11 rows per group), not raw observations. The dashboard metrics are computed from the full dataset and are correct. The calibration and error model modules are designed for the full raw hourly data from the source Excel files — to run them at scale, re-run `SimilarityAnalysisExploration.ipynb` with the original PeMS/StreetLight files.
+The CSVs in `dashboard_data/` are aggregated summaries. `hourly_df.csv` stores hourly *averages* per group (4 to 11 rows per group), not raw observations. The dashboard metrics are computed from the full dataset and are correct. The calibration and error model modules are designed for the full raw hourly data from the source Excel files. To run them at scale, re run `SimilarityAnalysisExploration.ipynb` with the original PeMS/StreetLight files.
