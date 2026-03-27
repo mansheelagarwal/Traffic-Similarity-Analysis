@@ -16,7 +16,7 @@ import plotly.graph_objects as go
 # ============================================================
 # Paths
 # ============================================================
-DATA_DIR = Path("useful_dashboard_data")
+DATA_DIR = Path("dashboard_data")
 SUMMARY_PATH = DATA_DIR / "summary_df.csv"
 HOURLY_PATH = DATA_DIR / "hourly_df.csv"
 PCA_PATH = DATA_DIR / "pca_dashboard_points.csv"
