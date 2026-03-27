@@ -1,111 +1,93 @@
-## The Goal is to Understand
-- Whether StreetLight captures real traffic behavior accurately
-- Where it deviates (magnitude, variability, congestion patterns)
-- How reliable it is for downstream transportation analysis
+# Traffic Similarity Analysis — Technical Upgrades
+
+This branch refactors the original notebook-based analysis into a structured Python package with tested modules and statistically rigorous metrics. The analysis itself is unchanged — this is about making it reproducible, testable, and extensible.
+
+See the `main` branch for background on the dataset, regions, and analytical goals.
 
 ---
 
-## Regions Analyzed
+## What changed
 
-The study focuses on four representative regions:
+The original code lived entirely in `SimilarityAnalysisExploration.ipynb`. The metric functions, preprocessing steps, and similarity computations are now in `src/` as importable modules with unit tests.
 
-| Region | Description |
-|---|---|
-| High Congestion | Dense urban corridors with peak-hour bottlenecks |
-| Low Congestion | Lighter traffic areas with minimal delay |
-| Rural | Low-volume roads with sparse sensor coverage |
-| Urban | Mixed-use zones with moderate traffic patterns |
+Three things were added on top of the existing analysis:
 
-Each region aggregates multiple stations/zones into hourly observations.
+**Bootstrap confidence intervals** — the original Energy Distance, Wasserstein, and MMD scores were point estimates with no uncertainty quantification. All three now report 95% CIs via percentile bootstrap (500 resamples).
 
----
+**Bias decomposition** — MAE tells you *how much* StreetLight is off. The Murphy (1988) decomposition tells you *why*: it splits MSE into bias², variance, and noise components. High-congestion PM peak, for example, has ~60% of its error coming from systematic bias rather than random noise — meaning calibration would actually help there.
 
-## What the Project Does
-
-### 1. Data Processing & Feature Engineering
-- Aligns PeMS and StreetLight data at the hourly level
-- Constructs a shared feature space including:
-  - `flow` — vehicles/hour
-  - `speed` — mph
-  - `density proxy`
-  - `dynamics` — change in flow and speed
-
-### 2. Similarity Analysis
-Compares distributions using three metrics:
-- **Energy Distance**
-- **Sliced Wasserstein Distance**
-- **Maximum Mean Discrepancy (MMD)**
-
-These metrics measure how similar the overall data distributions are across datasets.
-
-### 3. Error Analysis
-- Mean absolute error (flow and speed)
-- Aggregated percentage error
-- Hourly error trends
-
-### 4. PCA-Based Comparison
-PCA is used to:
-- Project both datasets into a shared space
-- Visually compare distributions
-- Analyze variability differences
-
-### 5. Interactive Dashboard
-A Dash-based dashboard enables:
-- Region selection via map
-- Metric and feature space selection
-- Visualization of:
-  - Region ranking
-  - Flow and speed overlays
-  - Error profiles
-  - PCA comparison
+**Quantile calibration** — a post-hoc correction layer that maps StreetLight flow distributions toward PeMS using quantile transformers fit per region/time slice. Requires n ≥ 30 observations per group; skips groups below that threshold rather than overfitting.
 
 ---
-## Dashboard Explanation Loom Video 
 
-Here's the link to the dashboard presentation : 
+## Structure
+```
+src/
+├── metrics.py        # energy_distance, sliced_wasserstein, mmd, ks_test, bootstrap_ci
+├── preprocessing.py  # bias_variance_decomposition, compute_decomposition_table
+├── models.py         # build_error_model (LightGBM + SHAP), umap embeddings, cross-correlation lag
+└── calibration.py    # TrafficCalibrator (quantile mapping, per-group fit)
 
-[https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4](https://www.loom.com/share/5a43523d38034a6e812c902a9f8ccdd4)
+tests/
+└── test_metrics.py   # 8 unit tests covering metrics and bias decomposition
 
-## How to Run the Project
+dashboard/
+└── geo_region_dashboard.py   # unchanged from main
 
-### Step 1: Run Similarity Analysis
-
-Run the similarity exploration notebook:
-```text
-similarity_analysis_exploration.ipynb
+dashboard_data/               # pre-aggregated outputs from the full dataset
 ```
 
-#### Expected Output Files
-
-After running the notebook, confirm the following files are generated:
-```text
-data/dashboard_data/
-├── summary_df.csv
-├── hourly_df.csv
-├── feature_df.csv
-└── pca_dashboard_points.csv
-```
-
-| File | Contents |
-|---|---|
-| `summary_df.csv` | Region-level similarity metrics and errors |
-| `hourly_df.csv` | Hourly aligned PeMS vs StreetLight values |
-| `feature_df.csv` | Feature-level comparisons |
-| `pca_dashboard_points.csv` | PCA projections for visualization |
-
-> **Note:** These files are required for the dashboard to function.
-
 ---
 
-### Step 2: Install Dependencies & Run the Dashboard
+## Setup
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/mansheelagarwal/Traffic-Similarity-Analysis.git
+cd Traffic-Similarity-Analysis
+git checkout technical-upgrades
+
+python3 -m venv venv && source venv/bin/activate
+pip install -e ".[dev]"
+```
+
+---
+
+## Running tests
+```bash
+pytest tests/ -v --cov=src --cov-report=term-missing
+```
+
+8 tests, all passing. `metrics.py` at 100% coverage.
+
+---
+
+## Running the dashboard
+```bash
 python dashboard/geo_region_dashboard.py
 ```
 
-### Step 3: Open the Dashboard
+Open `http://127.0.0.1:8050`. The dashboard reads from `dashboard_data/` which contains outputs pre-computed from the full PeMS/StreetLight dataset.
 
-Once the server starts, navigate to:
+---
+
+## Using the new modules
+```python
+import pandas as pd
+from src.metrics import bootstrap_ci, energy_distance, ks_test
+from src.preprocessing import compute_decomposition_table
+from src.calibration import TrafficCalibrator
+
+hourly_df = pd.read_csv("dashboard_data/hourly_df.csv")
+
+# bias decomposition across all groups
+decomp = compute_decomposition_table(hourly_df)
+
+# calibration (needs full raw data for meaningful results — see note below)
+cal = TrafficCalibrator().fit(hourly_df)
+print(cal.calibration_report(hourly_df))
 ```
-http://127.0.0.1:8050
-```
+
+---
+
+## A note on dashboard_data
+
+The CSVs in `dashboard_data/` are aggregated summaries — `hourly_df.csv` stores hourly *averages* per group (4–11 rows per group), not raw observations. The dashboard metrics are computed from the full dataset and are correct. The calibration and error model modules are designed for the full raw hourly data from the source Excel files — to run them at scale, re-run `SimilarityAnalysisExploration.ipynb` with the original PeMS/StreetLight files.
