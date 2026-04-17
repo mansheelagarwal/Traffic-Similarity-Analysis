@@ -68,18 +68,47 @@ Here's the link to the dashboard presentation :
 
 ## How to Run the Project
 
-### Step 1: Run Similarity Analysis
+This project has two stages:
 
-Run the similarity exploration notebook:
-```text
-similarity_analysis_exploration.ipynb
+1. Run the analysis notebook to generate dashboard-ready summary files.
+2. Run the Dash dashboard to visualize the generated results.
+
+The dashboard depends on generated CSV files. In particular, `pca_dashboard_points.csv` is not included in the repository because it is too large for GitHub. Run the analysis notebook first to create it locally.
+
+---
+
+### Step 1: Install Dependencies
+
+From the project root, run:
+
+```bash
+pip install -r requirements.txt
 ```
 
-#### Expected Output Files
+---
 
-After running the notebook, confirm the following files are generated:
+### Step 2: Run the Similarity Analysis Notebook
+
+Open and run the notebook from top to bottom:
+
 ```text
-data/dashboard_data/
+SimilarityAnalysisExploration.ipynb
+```
+
+The notebook performs the full analysis pipeline:
+
+- loads PeMS and StreetLight data
+- standardizes both sources into a shared hourly schema
+- aligns timestamps across datasets
+- engineers traffic features such as flow, speed, density proxy, and dynamics
+- computes similarity metrics and error summaries
+- generates PCA projection points for visualization
+- exports dashboard-ready CSV files
+
+After the notebook finishes, it should create:
+
+```text
+useful_dashboard_data/
 ├── summary_df.csv
 ├── hourly_df.csv
 ├── feature_df.csv
@@ -93,19 +122,48 @@ data/dashboard_data/
 | `feature_df.csv` | Feature-level comparisons |
 | `pca_dashboard_points.csv` | PCA projections for visualization |
 
-> **Note:** These files are required for the dashboard to function.
+> **Note:** `pca_dashboard_points.csv` is generated locally and is not committed to GitHub because of its file size.
 
 ---
 
-### Step 2: Install Dependencies & Run the Dashboard
+### Step 3: Run the Dashboard
+
+After the dashboard data files are generated, run:
+
 ```bash
-pip install -r requirements.txt
 python dashboard/geo_region_dashboard.py
 ```
 
-### Step 3: Open the Dashboard
+The Dash server will start locally.
 
-Once the server starts, navigate to:
-```
+---
+
+### Step 4: Open the Dashboard
+
+Open the following link in your browser:
+
+```text
 http://127.0.0.1:8050
+```
+
+This link works only while the Dash server is running on your machine.
+
+If port `8050` is already in use, change the port number near the bottom of `dashboard/geo_region_dashboard.py`:
+
+```python
+app.run(debug=True, port=8050)
+```
+
+---
+
+### Expected Workflow
+
+```text
+Run notebook
+    ↓
+Generate useful_dashboard_data/*.csv
+    ↓
+Run Dash app
+    ↓
+Open local dashboard at http://127.0.0.1:8050
 ```
