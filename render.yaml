@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: traffic-similarity-dashboard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn dashboard.geo_region_dashboard:server
+    plan: free

@@ -5,6 +5,7 @@ California Traffic Similarity Dashboard
 """
 
 from pathlib import Path
+import os
 import numpy as np
 import pandas as pd
 
@@ -16,7 +17,10 @@ import plotly.graph_objects as go
 # ============================================================
 # Paths
 # ============================================================
-DATA_DIR = Path("useful_dashboard_data")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT_DIR / "dashboard_data"
+if not DATA_DIR.exists():
+    DATA_DIR = ROOT_DIR / "useful_dashboard_data"
 SUMMARY_PATH = DATA_DIR / "summary_df.csv"
 HOURLY_PATH = DATA_DIR / "hourly_df.csv"
 PCA_PATH = DATA_DIR / "pca_dashboard_points.csv"
@@ -657,4 +661,7 @@ def redraw(feature_group, metric, day_type, time_slice, selected_region):
     )
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    port = int(os.environ.get("PORT", 8050))
+    debug = os.environ.get("DASH_DEBUG", "false").lower() == "true"
+    print(f"Starting dashboard on http://127.0.0.1:{port}")
+    app.run(debug=debug, host="0.0.0.0", port=port)
